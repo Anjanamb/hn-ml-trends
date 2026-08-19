@@ -45,11 +45,30 @@ def new_story_ids(limit: int | None = None, timeout: float = 10.0) -> list[int]:
     return ids[:limit] if limit is not None else ids
 
 
-def get_item(item_id: int, timeout: float = 10.0) -> dict:
-    """Fetch a single HN item (story, comment, poll, ...) by ID."""
-    r = requests.get(f"{BASE_URL}/item/{item_id}.json", timeout=timeout)
-    r.raise_for_status()
-    return r.json() or {}
+def get_item(
+    item_id: int,
+    timeout: float = 15.0,
+    retries: int = 3,
+    backoff: float = 1.0,
+) -> dict:
+    """Fetch a single HN item (story, comment, poll, ...) by ID.
+
+    Retries transient network / 5xx failures with exponential backoff
+    so a single flaky request does not sink a full fetch of hundreds
+    of items.
+    """
+    for attempt in range(retries + 1):
+        try:
+            r = requests.get(f"{BASE_URL}/item/{item_id}.json", timeout=timeout)
+            r.raise_for_status()
+            return r.json() or {}
+        except (requests.Timeout, requests.ConnectionError, requests.HTTPError):
+            if attempt < retries:
+                time.sleep(backoff * (2 ** attempt))
+    # Give up but do not crash the whole fetch: return an empty dict
+    # so the caller can filter it out. Callers already tolerate this
+    # (see ``fetch_items``).
+    return {}
 
 
 def fetch_items(
