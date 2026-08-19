@@ -1,0 +1,16 @@
+venv/
+.git/
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Local notes
+CLAUDE.md
+.claude/
+NOTES.md
+nb-run.log
+
+# Fetched data (rebuilt inside the container against the live API)
+data/*
+!data/README.md

@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+
+# Secrets (kept for the Ollama config; no HN auth needed)
+.env
+*.local.env
+
+# Data (fetched stories, embeddings, labels): rebuilt from notebooks
+data/*
+!data/README.md
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_meta
+
+# Local working artefacts
+nb-run.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local working notes (per-developer; not committed)
+CLAUDE.md
+.claude/
+NOTES.md
+*.local.md
