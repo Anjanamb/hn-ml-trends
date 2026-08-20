@@ -17,8 +17,56 @@ walls, no rate-limit gates, and no policy applications: the entire
 API is a public read-only Firebase JSON endpoint documented at
 <https://github.com/HackerNews/API>.
 
-> **Status: scaffold.** Repository layout and dependencies are in place.
-> Implementations land per notebook.
+## Headline results
+
+On one fetch of 223 AI/ML stories from the current HN
+`topstories` + `newstories` (2026-08-19), split into a previous
+window (older 111) and a current window (newer 112):
+
+**Classification (67-story held-out test set, silver labels from
+qwen2.5:14b with Claude spot-check):**
+
+| Classifier                        | Accuracy vs silver |
+| --------------------------------- | -----------------: |
+| TF-IDF + logistic regression      |              43.3% |
+| llama3.1:8b via LangChain         |          **62.7%** |
+
+The LLM classifier adds +19 percentage points (+45% relative)
+over the linear baseline. Both numbers should be read against the
+silver-label ceiling: a Claude review of a 24-row stratified
+spot-check found silver-vs-review agreement of **62.5%**, so the
+LLM classifier is essentially at the silver-label quality wall.
+The absolute-accuracy number is *silver agreement*, not human
+truth; the +19pp gap between methods is the reliable finding.
+
+**Trend detection + LangGraph agent (current vs previous window):**
+
+The state machine fires a conditional drill-down node when any
+category's share swings by more than 3 percentage points. On this
+run:
+
+| Category   | Delta          |
+| ---------- | -------------- |
+| research   | **+13.3 pp**   |
+| tool       | **+3.5 pp**    |
+| product    | -2.9 pp        |
+| news       | -1.0 pp        |
+| tutorial   | -1.9 pp        |
+| opinion    | -10.9 pp       |
+
+Drill-down summaries for `research` and `tool` are produced by
+the LLM with only the current-window titles in each category as
+context. Full report saved to `data/trend_report.md`.
+
+**LangGraph vs single-prompt baseline:**
+
+The single-prompt baseline (all titles -> one LLM call ->
+one paragraph) runs in ~7s and costs ~2,300 tokens. The
+LangGraph agent (classify per story + conditional drill-down)
+runs in ~60s and costs ~35,600 tokens (about **15.5x** the
+baseline). The LangGraph output is *structured* (numeric deltas
+per category + targeted drill-downs) rather than *narrative*;
+which is preferable depends on the downstream consumer.
 
 ## What this project does
 
