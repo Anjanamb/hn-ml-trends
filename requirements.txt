@@ -11,6 +11,7 @@ seaborn>=0.13
 langchain>=0.3
 langchain-ollama>=0.3
 langgraph>=0.2
+grandalf>=0.8
 jupyter>=1.0
 jupyterlab>=4.0
 pytest>=7.4
